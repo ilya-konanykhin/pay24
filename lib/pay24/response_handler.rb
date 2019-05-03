@@ -25,7 +25,7 @@ module Pay24
       check: :check_if_account_is_valid,
     }.freeze
 
-    def initialize(params: {}, find_user_callback: nil, payment_callback: nil)
+    def initialize(params: {}, find_user_callback: nil, payment_callback: nil, raise_on_error: false)
       @command            = params[:command]
       @account            = params[:account]
       @transaction_id     = params[:txn_id]
@@ -33,6 +33,7 @@ module Pay24
       @sum                = params[:sum]
       @find_user_callback = find_user_callback
       @payment_callback   = payment_callback
+      @raise_on_error     = raise_on_error
       freeze
     end
 
@@ -84,7 +85,7 @@ module Pay24
 
         @payment_callback.(requested_account, sum)
       rescue => e
-        raise e if Rails.env.development? || Rails.env.test?
+        raise e if @raise_on_error
         result_code = ERROR_INTERNAL
       else
         result_code = SUCCESS
